@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="2026-11-17.2">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>大貨異常追蹤</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #555;
+  --color-text-tertiary: #999;
+  --color-background-primary: #fff;
+  --color-background-secondary: #f5f5f4;
+  --color-border-tertiary: #e5e5e4;
+  --color-border-secondary: #ccc;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary: #f0f0f0;
+    --color-text-secondary: #aaa;
+    --color-text-tertiary: #666;
+    --color-background-primary: #1c1c1e;
+    --color-background-secondary: #2c2c2e;
+    --color-border-tertiary: #3a3a3c;
+    --color-border-secondary: #555;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);background:var(--color-background-secondary);color:var(--color-text-primary);min-height:100vh;}
+.page{max-width:780px;margin:0 auto;padding:1.5rem 1rem;}
+.top-bar{display:flex;flex-direction:column;gap:12px;margin-bottom:1.1rem;}
+.tb-row{display:flex;align-items:center;gap:8px;}
+.tb-head{justify-content:space-between;}
+.top-bar h2{font-size:19px;font-weight:600;margin:0;white-space:nowrap;}
+.tb-spacer{flex:1;}
+.search-wrap{position:relative;flex:0 1 340px;min-width:160px;}
+.search-wrap .ti-search{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--color-text-tertiary);pointer-events:none;}
+.search-bar{padding:7px 12px 7px 32px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:13.5px;background:var(--color-background-primary);color:var(--color-text-primary);width:100%;height:34px;}
+.btn-add{display:flex;align-items:center;gap:5px;padding:7px 14px;border:none;border-radius:var(--border-radius-md);background:#3C3489;color:#fff;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;height:34px;}
+.btn-add:hover{background:#2E2870;}
+.btn-io{display:flex;align-items:center;gap:4px;white-space:nowrap;height:34px;padding:6px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);font-size:12.5px;cursor:pointer;}
+.btn-io:hover{background:var(--color-background-secondary);}
+.user-bar{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary);white-space:nowrap;}
+.user-bar a{color:var(--color-text-secondary);text-decoration:none;border-bottom:0.5px dotted var(--color-text-tertiary);}
+.btn-signout{padding:5px 9px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);font-size:11.5px;cursor:pointer;white-space:nowrap;}
+.btn-signout:hover{background:var(--color-background-secondary);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:13px;padding:10px 20px;border-radius:99px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw;text-align:center;}
+.toast.show{opacity:1;}
+.demo-banner{display:flex;align-items:center;gap:6px;font-size:12.5px;background:#FAEEDA;color:#633806;border:0.5px solid #854F0B;border-radius:var(--border-radius-md);padding:8px 12px;margin-bottom:12px;}
+.view-tabs{display:flex;gap:4px;margin-top:10px;border-bottom:0.5px solid var(--color-border-secondary);}
+.view-tab{border:none;background:none;padding:9px 14px;font-size:14px;font-weight:500;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.view-tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);}
+.filter-section{margin-bottom:1.25rem;margin-top:14px;}
+.filter-group{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.filter-group-label{font-size:12px;color:var(--color-text-secondary);min-width:56px;}
+.filter-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;border:0.5px solid var(--color-border-tertiary);font-size:11px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);user-select:none;}
+.filter-chip .dot{width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor;flex-shrink:0;}
+.filter-chip.checked{background:#EEEDFE;color:#3C3489;border-color:#3C3489;}
+.filter-chip.checked .dot{background:currentColor;}
+.mini-select{padding:5px 12px;border-radius:99px;border:0.5px solid var(--color-border-tertiary);font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);max-width:100%;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1.25rem;}
+.stat-card{background:var(--color-background-primary);border-radius:var(--border-radius-md);padding:10px 12px;text-align:center;border:0.5px solid var(--color-border-tertiary);cursor:pointer;transition:border-color .12s,background .12s;}
+.stat-card:hover{border-color:#3C3489;}
+.stat-card.active{background:#EEEDFE;border-color:#3C3489;}
+.stat-card.active .stat-num,.stat-card.active .stat-label{color:#3C3489;}
+.stat-num{font-size:19px;font-weight:500;}
+.stat-label{font-size:11px;color:var(--color-text-secondary);margin-top:2px;}
+.customer-list{display:flex;flex-direction:column;gap:10px;}
+.customer-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;}
+.customer-card.is-overdue{border-left:3px solid #B3261E;}
+.customer-card.is-due-soon{border-left:3px solid #E65100;}
+.customer-card.is-closed{opacity:.62;}
+.card-header{display:flex;align-items:center;gap:10px;padding:.9rem 1.25rem;cursor:pointer;user-select:none;}
+.card-header:hover{background:var(--color-background-secondary);}
+.light-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:0.5px solid rgba(0,0,0,.15);}
+.card-meta{flex:1;min-width:0;}
+.card-name{font-size:15px;font-weight:500;word-break:break-word;}
+.card-no{color:var(--color-text-tertiary);font-weight:400;margin-right:4px;}
+.card-company{font-size:12px;color:var(--color-text-secondary);margin-top:1px;word-break:break-word;}
+.card-log-preview{font-size:12.5px;color:var(--color-text-secondary);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;line-height:1.35;}
+.card-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.card-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap;}
+.card-last{font-size:11px;color:var(--color-text-tertiary);}
+.card-last.overdue-text{color:#B3261E;font-weight:600;}
+.card-last.due-soon-text{color:#E65100;font-weight:600;}
+.card-body{display:none;border-top:0.5px solid var(--color-border-tertiary);padding:1rem 1.25rem;}
+.card-body.open{display:block;}
+.section-label{font-size:12px;color:var(--color-text-secondary);font-weight:500;margin-bottom:8px;margin-top:16px;display:flex;align-items:center;gap:6px;}
+.section-label:first-child{margin-top:0;}
+.section-label .who{font-weight:400;color:var(--color-text-tertiary);}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;}
+.info-item.wide{grid-column:1/-1;}
+.info-k{font-size:11px;color:var(--color-text-tertiary);}
+.info-v{font-size:13.5px;line-height:1.5;word-break:break-word;white-space:pre-wrap;}
+.info-v.none{color:var(--color-text-tertiary);}
+.pending-box{font-size:13px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;}
+.log-entry{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px 12px;margin-bottom:6px;background:var(--color-background-secondary);display:flex;gap:10px;align-items:flex-start;}
+.log-date-badge{font-size:12px;color:var(--color-text-secondary);white-space:nowrap;padding-top:2px;min-width:82px;}
+.log-text-display{flex:1;font-size:14px;line-height:1.6;word-break:break-word;white-space:pre-wrap;}
+.log-by{font-size:11px;color:var(--color-text-tertiary);}
+.log-icon-btn{background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:15px;color:var(--color-text-tertiary);line-height:1;}
+.log-icon-btn.del:hover{color:#A32D2D;}
+.add-log-row{display:flex;gap:6px;margin-top:6px;}
+.log-input{flex:1;padding:7px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:13px;background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans);}
+.btn-log{padding:7px 14px;border:none;border-radius:var(--border-radius-md);background:#3C3489;color:#EEEDFE;font-size:12.5px;cursor:pointer;font-weight:500;white-space:nowrap;}
+.card-footer{display:flex;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--color-border-tertiary);gap:6px;flex-wrap:wrap;}
+.btn-edit-c{padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:12.5px;cursor:pointer;background:transparent;color:var(--color-text-secondary);}
+.btn-edit-c:hover{background:var(--color-background-secondary);}
+.btn-edit-c.primary{background:#3C3489;color:#EEEDFE;border-color:#3C3489;}
+.btn-del-c{padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:12.5px;cursor:pointer;background:transparent;color:var(--color-text-tertiary);margin-right:auto;}
+.btn-del-c:hover{color:#A32D2D;border-color:#A32D2D;}
+.empty{text-align:center;padding:3rem 1rem;color:var(--color-text-tertiary);font-size:14px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal{background:var(--color-background-primary);border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);width:460px;max-width:94vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-head{padding:1.1rem 1.5rem .5rem;}
+.modal-head h3{font-size:16px;font-weight:500;}
+.modal-sub{font-size:12.5px;color:var(--color-text-secondary);margin-top:4px;line-height:1.5;}
+.modal-body{flex:1;min-height:0;overflow-y:auto;padding:.5rem 1.5rem 1rem;}
+.modal-foot{display:flex;gap:8px;padding:.85rem 1.5rem;border-top:0.5px solid var(--color-border-tertiary);}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;}
+.field label .req{color:#B3261E;margin-left:2px;}
+.field input,.field select,.field textarea{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-size:14px;background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans);}
+.field textarea{resize:vertical;min-height:64px;line-height:1.5;}
+.field .field-error{border-color:#B3261E;box-shadow:0 0 0 1px #B3261E;}
+.field-hint{font-size:11.5px;color:var(--color-text-tertiary);margin-top:4px;line-height:1.4;}
+.pick-row{display:flex;gap:6px;flex-wrap:wrap;}
+.pick-btn{flex:1 1 0;min-width:84px;padding:9px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-secondary);font-size:13.5px;cursor:pointer;text-align:center;line-height:1.3;}
+.pick-btn small{display:block;font-size:10.5px;color:var(--color-text-tertiary);margin-top:2px;}
+.pick-btn.on{border-color:#3C3489;background:#EEEDFE;color:#3C3489;font-weight:500;}
+.pick-btn.on small{color:#3C3489;}
+.pick-btn.light-紅.on{background:#F8CBCB;border-color:#B3261E;color:#7A1410;}
+.pick-btn.light-黃.on{background:#FFF2B3;border-color:#B58900;color:#5C4500;}
+.pick-btn.light-綠.on{background:#CDEBD0;border-color:#2E7D32;color:#1B4D1E;}
+.pick-btn.light-紅.on small,.pick-btn.light-黃.on small,.pick-btn.light-綠.on small{color:inherit;}
+.btn-confirm{flex:1;padding:10px;border:none;border-radius:var(--border-radius-md);background:#3C3489;color:#EEEDFE;font-size:14px;cursor:pointer;font-weight:500;}
+.btn-confirm.ghost{background:transparent;color:#3C3489;border:0.5px solid #3C3489;}
+.btn-cancel{flex:0 0 auto;padding:10px 16px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-primary);font-size:14px;cursor:pointer;}
+.auth-screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;gap:14px;}
+.auth-screen h2{font-size:20px;font-weight:500;}
+.auth-screen p{font-size:14px;color:var(--color-text-secondary);max-width:320px;line-height:1.6;}
+.btn-google{display:flex;align-items:center;gap:10px;padding:10px 20px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px;cursor:pointer;}
+.btn-google:hover{background:var(--color-background-secondary);}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-top:14px;}
+.panel h3{font-size:14px;font-weight:500;margin-bottom:10px;}
+.panel .hint{font-size:12px;color:var(--color-text-tertiary);margin:-4px 0 10px;}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table.stat{border-collapse:collapse;width:100%;font-size:12.5px;}
+table.stat th,table.stat td{border:0.5px solid var(--color-border-tertiary);padding:6px 8px;text-align:center;white-space:nowrap;}
+table.stat th{background:var(--color-background-secondary);font-weight:500;color:var(--color-text-secondary);}
+table.stat td:first-child,table.stat th:first-child{text-align:left;position:sticky;left:0;background:var(--color-background-primary);}
+table.stat th:first-child{background:var(--color-background-secondary);}
+table.stat tr.total td{font-weight:600;}
+table.stat td.zero{color:var(--color-text-tertiary);}
+.user-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;}
+.user-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:0.5px solid var(--color-border-tertiary);}
+.user-main{flex:1;min-width:0;}
+.user-name{font-size:14px;font-weight:500;}
+.user-dept{font-size:11.5px;color:var(--color-text-tertiary);font-weight:400;margin-left:4px;}
+.user-email{font-size:12px;color:var(--color-text-secondary);word-break:break-all;}
+.user-bar .badge{padding:2px 7px;font-size:10.5px;}
+.guide-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px;}
+.guide-card h4{font-size:13.5px;font-weight:500;margin-bottom:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.guide-card .covers{font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:6px;}
+.guide-card dl{display:grid;grid-template-columns:84px 1fr;gap:4px 10px;font-size:12.5px;line-height:1.5;}
+.guide-card dt{color:var(--color-text-tertiary);}
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px !important; }
+  .page{padding:1rem 0.75rem;}
+  .top-bar{gap:10px;}
+  .top-bar h2{font-size:16px;}
+  .tb-actions{flex-wrap:wrap;}
+  .search-wrap{flex:1 1 100%;}
+  .tb-spacer{display:none;}
+  .btn-add{margin-left:auto;}
+  .filter-group-label{width:100%;min-width:0;margin-bottom:2px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .stat-card{padding:8px 8px;}
+  .stat-num{font-size:16px;}
+  .card-header{padding:.8rem 1rem;flex-wrap:wrap;}
+  .card-meta{min-width:0;flex-basis:calc(100% - 30px);}
+  .card-log-preview{font-size:12px;max-width:100%;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .card-right{flex-direction:row;align-items:center;justify-content:space-between;width:100%;margin-top:6px;flex-wrap:wrap;gap:6px;}
+  .card-body{padding:0.85rem 1rem;}
+  .info-grid{grid-template-columns:1fr;}
+  .add-log-row{flex-direction:column;}
+  .btn-log{width:100%;padding:10px;}
+  .modal-bg{align-items:flex-end;}
+  .modal{width:100vw;max-width:100vw;max-height:94vh;border-radius:16px 16px 0 0;}
+  .modal-head,.modal-body,.modal-foot{padding-left:1rem;padding-right:1rem;}
+  .card-footer .btn-edit-c{flex:1 1 auto;padding:9px 10px;}
+  .guide-card dl{grid-template-columns:72px 1fr;}
+  .user-form{grid-template-columns:1fr;}
+  .user-row{flex-wrap:wrap;}
+  .user-main{flex-basis:100%;}
+}
+@media (pointer: coarse) {
+  .filter-chip{min-height:32px;}
+  .log-icon-btn{padding:6px 8px;font-size:18px;}
+  input[type="checkbox"]{width:18px;height:18px;}
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="auth-screen">
+  <i class="ti ti-lock" style="font-size:40px;color:var(--color-text-tertiary)"></i>
+  <h2>大貨異常追蹤</h2>
+  <p>請使用 Google 帳號登入以提報與檢視大貨異常資料</p>
+  <button class="btn-google" onclick="signInWithGoogle()"><i class="ti ti-brand-google"></i> 使用 Google 登入</button>
+</div>
+
+<div id="unauthorized-screen" class="auth-screen">
+  <i class="ti ti-shield-x" style="font-size:40px;color:#A32D2D"></i>
+  <h2>沒有存取權限</h2>
+  <p>你的帳號（<span id="unauthorized-email"></span>）還沒有被加入使用者名單，請聯絡管理員新增並指定角色。</p>
+  <button class="btn-signout" onclick="signOutUser()">登出，改用其他帳號</button>
+</div>
+
+<div class="page" id="app-page" style="display:none">
+<div class="top-bar">
+  <div class="tb-row tb-head">
+    <h2><i class="ti ti-alert-triangle" style="font-size:20px;vertical-align:-3px;margin-right:6px"></i>大貨異常追蹤</h2>
+    <div class="user-bar"><i class="ti ti-user-circle" style="font-size:16px"></i><span id="user-email-display"></span><button class="btn-signout" onclick="signOutUser()">登出</button></div>
+  </div>
+  <div class="tb-row tb-actions" id="list-actions">
+    <div class="search-wrap"><i class="ti ti-search"></i><input class="search-bar" id="search" type="text" placeholder="搜尋 布號 / 顏色 / 品牌 / 缸號…" oninput="render()"></div>
+    <span class="tb-spacer"></span>
+    <button class="btn-io" onclick="exportExcel()" title="依目前的篩選與搜尋結果匯出 Excel"><i class="ti ti-file-spreadsheet"></i> 匯出 Excel</button>
+    <button class="btn-add" id="btn-report" onclick="openReport()"><i class="ti ti-plus"></i> 提報異常</button>
+  </div>
+</div>
+<div id="demo-banner" class="demo-banner" style="display:none"><span style="flex:1"><i class="ti ti-flask"></i> 示範模式：資料只存在這個分頁，重新整理就會清空。</span><label style="white-space:nowrap">角色 <select id="demo-role" class="mini-select" onchange="demoRole(this.value)"><option value="admin">管理員</option><option value="lead">主管</option><option value="tech">技術課</option><option value="reporter">提報</option><option value="viewer">唯讀</option></select></label></div>
+<div id="toast" class="toast"></div>
+
+<div class="view-tabs">
+  <button class="view-tab active" id="tab-list" onclick="switchView('list')">問題清單</button>
+  <button class="view-tab" id="tab-stats" onclick="switchView('stats')">統計</button>
+  <button class="view-tab" id="tab-guide" onclick="switchView('guide')">判定基準</button>
+  <button class="view-tab" id="tab-users" onclick="switchView('users')" style="display:none">使用者</button>
+</div>
+
+<div id="list-view">
+  <div class="filter-section">
+    <div class="filter-group"><span class="filter-group-label">燈號</span><span id="light-chips" class="filter-group" style="margin:0"></span></div>
+    <div class="filter-group"><span class="filter-group-label">調查狀態</span><span id="inv-chips" class="filter-group" style="margin:0"></span></div>
+    <div class="filter-group"><span class="filter-group-label">整合分類</span><span id="cat-chips" class="filter-group" style="margin:0"></span></div>
+    <div class="filter-group">
+      <span class="filter-group-label">異常類型</span>
+      <select class="mini-select" id="type-filter" onchange="render()"><option value="">全部類型</option></select>
+      <select class="mini-select" id="brand-filter" onchange="render()"><option value="">全部品牌</option></select>
+    </div>
+  </div>
+  <div class="stats-row" id="stats-row"></div>
+  <div class="customer-list" id="issue-list"></div>
+</div>
+
+<div id="stats-view" style="display:none"></div>
+<div id="guide-view" style="display:none"></div>
+<div id="users-view" style="display:none"></div>
+</div>
+
+<!-- 提報表單（生管／業務） -->
+<div class="modal-bg" id="report-modal-bg">
+  <div class="modal">
+    <div class="modal-head"><h3 id="report-title">提報異常</h3><div class="modal-sub">一次提報一個「布號＋顏色＋異常類型」；同布號同色有兩種異常時，請分兩次提報。</div></div>
+    <div class="modal-body">
+      <div class="field"><label>布號<span class="req">*</span></label><input id="r-fabric" autocomplete="off"></div>
+      <div class="field"><label>顏色／色號<span class="req">*</span></label><input id="r-color" autocomplete="off"></div>
+      <div class="field"><label>異常類型<span class="req">*</span></label><select id="r-type"></select></div>
+      <div class="field"><label>燈號<span class="req">*</span></label><div class="pick-row" id="r-light"></div></div>
+      <div class="field"><label>品牌／客戶</label><input id="r-brand" list="brand-list" autocomplete="off"><datalist id="brand-list"></datalist></div>
+      <div class="field"><label>提報來源</label><select id="r-source"></select></div>
+      <div class="field"><label>影響訂單／缸號</label><input id="r-orders" autocomplete="off" placeholder="不確定可先填「待查」"></div>
+      <div class="field"><label>影響數量（含單位）</label><input id="r-qty" autocomplete="off" placeholder="例如：約 3,200 碼"></div>
+      <div class="field"><label>最近客戶交期</label><input id="r-due" type="date"></div>
+      <div class="field"><label>備註</label><textarea id="r-note"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeReport()">取消</button>
+      <button class="btn-confirm ghost" id="r-save-next" onclick="saveReport(true)">儲存並提報下一筆</button>
+      <button class="btn-confirm" onclick="saveReport(false)">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 調查回報（技術課） -->
+<div class="modal-bg" id="inv-modal-bg">
+  <div class="modal">
+    <div class="modal-head"><h3>調查回報</h3><div class="modal-sub" id="inv-sub"></div></div>
+    <div class="modal-body">
+      <div class="field"><label>本次回報狀態<span class="req">*</span></label><div class="pick-row" id="i-state"></div></div>
+      <div class="field"><label>廠別</label><input id="i-factory" list="factory-list" autocomplete="off"><datalist id="factory-list"></datalist></div>
+      <div class="field"><label>發生製程段</label><select id="i-stage"></select></div>
+      <div class="field"><label>具體狀況</label><textarea id="i-detail" placeholder="實際看到的現象"></textarea></div>
+      <div class="field"><label>實測值／依據</label><input id="i-measure" autocomplete="off" placeholder="請註明採用的標準"></div>
+      <div class="field"><label>資訊依據（可複選）</label><div class="pick-row" id="i-basis"></div><div class="field-hint">只有「口頭說明」時，代表內容尚未查證。</div></div>
+      <div class="field"><label>目前處理狀況</label><textarea id="i-handling"></textarea></div>
+      <div class="field"><label>改善／調整缸號</label><input id="i-fixlots" autocomplete="off" placeholder="多缸用頓號分隔，可註明調整內容"></div>
+      <div class="field"><label>廠端負責人</label><input id="i-owner" autocomplete="off"></div>
+      <div class="field"><label>廠端原因說法</label><textarea id="i-cause"></textarea></div>
+      <div class="field"><label>技術課初判</label><textarea id="i-view"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeInv()">取消</button>
+      <button class="btn-confirm" onclick="saveInv()">儲存回報</button>
+    </div>
+  </div>
+</div>
+
+<!-- 整合（部長／課長） -->
+<div class="modal-bg" id="sum-modal-bg">
+  <div class="modal">
+    <div class="modal-head"><h3>整合判定</h3><div class="modal-sub" id="sum-sub"></div></div>
+    <div class="modal-body">
+      <div class="field"><label>整合後分類</label><div class="pick-row" id="s-cat"></div></div>
+      <div class="field"><label>燈號</label><div class="pick-row" id="s-light"></div></div>
+      <div class="field"><label>業務窗口</label><input id="s-rep" autocomplete="off"></div>
+      <div class="field"><label>整合備註</label><textarea id="s-note"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeSum()">取消</button>
+      <button class="btn-confirm" onclick="saveSum()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script>
+/* ────────────────────────────────────────────────────────────
+   獨立的 Firebase 專案（不與 Development Tracker 共用資料與名單）
+   1. 把下面換成新專案的 firebaseConfig
+   2. OWNER_EMAILS 是擁有者，永遠是管理員，用來新增第一批使用者；
+      同一個信箱也要寫在 firestore.rules 裡
+   其他使用者與角色都在頁面的「使用者」分頁管理，不需要改程式
+   ──────────────────────────────────────────────────────────── */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.firebasestorage.app",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+const OWNER_EMAILS=['ches.0301@gmail.com'];
+
+/* ── 角色：決定每個人能做哪些事（伺服器端由 firestore.rules 再擋一次） ── */
+const ROLES={
+  admin:['管理員','purple','全部功能，加上使用者管理'],
+  lead:['主管','orange','提報、調查、整合判定、刪除'],
+  tech:['技術課','blue','提報、調查回報、追蹤紀錄'],
+  reporter:['提報','teal','提報（生管／業務）、編輯自己提報的項目、追蹤紀錄'],
+  viewer:['唯讀','gray','只能檢視與匯出']
+};
+const USERS_COL='users';
+
+const COL='bulk_issues';
+const DEMO=new URLSearchParams(location.search).has('demo');
+const TODAY=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
+
+/* ── 選項定義（與 Excel 版「問題布號盤點」一致） ── */
+const TONE={purple:['#E3D4F5','#4A2A80'],blue:['#CFE2F7','#1B4B82'],teal:['#C6ECE8','#11544C'],orange:['#FCD9B6','#7A3E00'],magenta:['#F7D1E6','#7A1F52'],green:['#CDEBD0','#1B4D1E'],yellow:['#FFF2B3','#5C4500'],gray:['#E3E3E3','#444'],red:['#F8CBCB','#7A1410']};
+const TYPES=[['毛度','purple'],['色差','blue'],['左中右異色','blue'],['儲存牢度','teal'],['耐水牢度','teal'],['其他牢度','teal'],['雞爪痕','orange'],['經向折痕','orange'],['其他布面品質','orange'],['後處理手感','magenta'],['Wicking','green'],['QD','green'],['規格NG','yellow'],['其他','gray']];
+const TYPE_TONE=Object.fromEntries(TYPES);
+const LIGHTS=[['紅','影響交期或需客戶讓步'],['黃','內部可處理、不影響交期'],['綠','輕微、已當場處理']];
+const LIGHT_COLOR={'紅':'#E05252','黃':'#F2C037','綠':'#4CAF50'};
+const LIGHT_ORDER={'紅':0,'黃':1,'綠':2};
+const INV=[['未調查','gray'],['調查中','blue'],['已回報','yellow'],['已整合','green']];
+const INV_TONE=Object.fromEntries(INV);
+const SOURCES=['廠端','生管','業務／客訴','品檢','實驗室','技術課'];
+const STAGES=['紗線','織造','染色','定型','後整理','品檢','待釐清'];
+const BASIS=['親見實物','查閱紀錄','口頭說明'];
+const CATS=[['進入細節追蹤','orange'],['已有對策僅監看','blue'],['已解決／誤報','green'],['待補資料','gray']];
+const CAT_TONE=Object.fromEntries(CATS);
+const CLOSED='已解決／誤報';
+
+let me=null;            // 目前登入者 {email,name,role}
+let users=[],unsubUsers=null;
+let items=[];
+let unsub=null;
+let currentView='list';
+const openCards=new Set();
+const F={lights:new Set(),inv:new Set(),cats:new Set(),stat:''};
+let editingId=null,invId=null,sumId=null;
+const pick={};   // 表單裡的按鈕式選項目前的值
+
+/* ── 小工具 ── */
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove('show'),2800);}
+function role(){return me?me.role:'none';}
+function isAdmin(){return role()==='admin';}
+function canReport(){return ['admin','lead','tech','reporter'].includes(role());}
+function canInvestigate(){return ['admin','lead','tech'].includes(role());}
+function canIntegrate(){return ['admin','lead'].includes(role());}
+function canLog(){return ['admin','lead','tech','reporter'].includes(role());}
+function isMine(x){return !!me&&!!x&&x.createdBy===me.email;}
+function canEditReport(x){return canIntegrate()||(canReport()&&isMine(x));}
+function canDelete(x){return canIntegrate()||(canReport()&&isMine(x)&&(x.invStatus||'未調查')==='未調查');}
+function who(name,email){return name||email||'';}
+function nowStamp(){return new Date().toISOString();}
+function blank(v){return v==null||String(v).trim()==='';}
+function val(id){return document.getElementById(id).value.trim();}
+function setVal(id,v){document.getElementById(id).value=v==null?'':v;}
+function badge(text,tone){const c=TONE[tone]||TONE.gray;return `<span class="badge" style="background:${c[0]};color:${c[1]}">${escHtml(text)}</span>`;}
+function daysTo(d){if(!d)return null;const a=new Date(TODAY+'T00:00:00'),b=new Date(d+'T00:00:00');return Math.round((b-a)/86400000);}
+function isClosed(x){return x.category===CLOSED;}
+function byId(id){return items.find(x=>x.id===id);}
+function setupBackdropClose(bgId,closeFn){const bg=document.getElementById(bgId);let down=false;bg.addEventListener('mousedown',e=>{down=(e.target===bg);});bg.addEventListener('click',e=>{if(e.target===bg&&down)closeFn();down=false;});}
+
+/* ── 資料存取：正式＝Firestore；示範模式＝記憶體（與 FDS 產生器相同做法） ── */
+const Store={
+  mode:'firebase',db:null,mem:{},ls:{},
+  init(mode){this.mode=mode;if(mode==='firebase')this.db=firebase.firestore();},
+  _list(col){return Object.entries(this.mem[col]||{}).map(([id,d])=>Object.assign({id},JSON.parse(JSON.stringify(d))));},
+  _emit(col){(this.ls[col]||[]).forEach(cb=>cb(this._list(col)));},
+  listen(col,cb){
+    if(this.mode==='memory'){(this.ls[col]=this.ls[col]||[]).push(cb);cb(this._list(col));return()=>{this.ls[col]=(this.ls[col]||[]).filter(f=>f!==cb);};}
+    return this.db.collection(col).onSnapshot(s=>cb(s.docs.map(d=>Object.assign({id:d.id},d.data()))),err=>showToast('✗ 讀取資料失敗：'+err.message));
+  },
+  async add(col,data){
+    if(this.mode==='memory'){const id=Date.now().toString(36)+Math.random().toString(36).slice(2,6);(this.mem[col]=this.mem[col]||{})[id]=JSON.parse(JSON.stringify(data));this._emit(col);return id;}
+    return (await this.db.collection(col).add(data)).id;
+  },
+  async set(col,id,data){
+    if(this.mode==='memory'){(this.mem[col]=this.mem[col]||{})[id]=JSON.parse(JSON.stringify(data));this._emit(col);return;}
+    await this.db.collection(col).doc(id).set(data);
+  },
+  async update(col,id,patch){
+    if(this.mode==='memory'){Object.assign(this.mem[col][id],JSON.parse(JSON.stringify(patch)));this._emit(col);return;}
+    await this.db.collection(col).doc(id).update(patch);
+  },
+  async remove(col,id){
+    if(this.mode==='memory'){delete this.mem[col][id];this._emit(col);return;}
+    await this.db.collection(col).doc(id).delete();
+  }
+};
+
+/* ── 按鈕式選項（單選／複選） ── */
+function buildPick(elId,options,{multi=false,cls=''}={}){
+  const el=document.getElementById(elId);
+  pick[elId]=multi?[]:'';
+  el.innerHTML=options.map(o=>{const [v,hint]=Array.isArray(o)?o:[o,''];return `<button type="button" class="pick-btn ${cls?cls+'-'+escHtml(v):''}" data-v="${escHtml(v)}">${escHtml(v)}${hint?`<small>${escHtml(hint)}</small>`:''}</button>`;}).join('');
+  el.onclick=e=>{const b=e.target.closest('.pick-btn');if(!b)return;const v=b.dataset.v;
+    if(multi){const a=pick[elId];const i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);}
+    else pick[elId]=(pick[elId]===v?'':v);
+    paintPick(elId);};
+}
+function paintPick(elId){const cur=pick[elId];document.querySelectorAll('#'+elId+' .pick-btn').forEach(b=>b.classList.toggle('on',Array.isArray(cur)?cur.includes(b.dataset.v):cur===b.dataset.v));}
+function setPick(elId,v){pick[elId]=Array.isArray(pick[elId])?(Array.isArray(v)?v.slice():[]):(v||'');paintPick(elId);}
+
+/* ── 篩選 ── */
+function buildChips(elId,options,set){
+  const el=document.getElementById(elId);
+  el.innerHTML=options.map(o=>`<label class="filter-chip" data-v="${escHtml(o)}"><span class="dot"></span>${escHtml(o)}</label>`).join('');
+  el.onclick=e=>{const c=e.target.closest('.filter-chip');if(!c)return;const v=c.dataset.v;if(set.has(v))set.delete(v);else set.add(v);F.stat='';paintChips();render();};
+}
+function paintChips(){
+  [['light-chips',F.lights],['inv-chips',F.inv],['cat-chips',F.cats]].forEach(([id,set])=>document.querySelectorAll('#'+id+' .filter-chip').forEach(c=>c.classList.toggle('checked',set.has(c.dataset.v))));
+}
+function buildFilters(){
+  buildChips('light-chips',LIGHTS.map(l=>l[0]),F.lights);
+  buildChips('inv-chips',INV.map(l=>l[0]),F.inv);
+  buildChips('cat-chips',CATS.map(l=>l[0]),F.cats);
+  document.getElementById('type-filter').innerHTML='<option value="">全部類型</option>'+TYPES.map(t=>`<option>${escHtml(t[0])}</option>`).join('');
+}
+function refreshBrandOptions(){
+  const brands=[...new Set(items.map(x=>x.brand).filter(b=>!blank(b)))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const sel=document.getElementById('brand-filter');const cur=sel.value;
+  sel.innerHTML='<option value="">全部品牌</option>'+brands.map(b=>`<option${b===cur?' selected':''}>${escHtml(b)}</option>`).join('');
+  document.getElementById('brand-list').innerHTML=brands.map(b=>`<option value="${escHtml(b)}">`).join('');
+  const facs=[...new Set(items.map(x=>x.factory).filter(b=>!blank(b)))];
+  document.getElementById('factory-list').innerHTML=facs.map(b=>`<option value="${escHtml(b)}">`).join('');
+}
+const STAT_DEFS=[
+  ['open','未解決',x=>!isClosed(x)],
+  ['red','紅燈',x=>!isClosed(x)&&x.light==='紅'],
+  ['todo','未調查',x=>!isClosed(x)&&(x.invStatus||'未調查')==='未調查'],
+  ['due','7 天內交期',x=>{const n=daysTo(x.due);return !isClosed(x)&&n!=null&&n<=7;}],
+  ['track','細節追蹤中',x=>x.category==='進入細節追蹤']
+];
+function filtered(){
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  const type=document.getElementById('type-filter').value,brand=document.getElementById('brand-filter').value;
+  const stat=STAT_DEFS.find(s=>s[0]===F.stat);
+  return items.filter(x=>{
+    if(stat&&!stat[2](x))return false;
+    // 已解決／誤報預設不顯示；勾選該分類或用搜尋時才列出
+    if(!stat&&isClosed(x)&&!F.cats.has(CLOSED)&&!q)return false;
+    if(F.lights.size&&!F.lights.has(x.light))return false;
+    if(F.inv.size&&!F.inv.has(x.invStatus||'未調查'))return false;
+    if(F.cats.size&&!F.cats.has(x.category||''))return false;
+    if(type&&x.type!==type)return false;
+    if(brand&&x.brand!==brand)return false;
+    if(q){const hay=[x.no,x.fabric,x.color,x.brand,x.orders,x.type,x.fixLots,x.factory,x.detail].join(' ').toLowerCase();if(!hay.includes(q))return false;}
+    return true;
+  }).sort((a,b)=>{
+    const c=(isClosed(a)?1:0)-(isClosed(b)?1:0);if(c)return c;
+    const l=(LIGHT_ORDER[a.light]??9)-(LIGHT_ORDER[b.light]??9);if(l)return l;
+    const d=(a.due||'9999').localeCompare(b.due||'9999');if(d)return d;
+    return (b.no||0)-(a.no||0);
+  });
+}
+
+/* ── 問題清單 ── */
+function infoItem(k,v,wide){return `<div class="info-item${wide?' wide':''}"><div class="info-k">${escHtml(k)}</div><div class="info-v${blank(v)?' none':''}">${blank(v)?'—':escHtml(v)}</div></div>`;}
+function dueLabel(x){
+  if(!x.due)return ['','交期未填'];
+  const n=daysTo(x.due);
+  if(isClosed(x))return ['','交期 '+x.due];
+  if(n<0)return ['overdue-text',`交期 ${x.due}（已過 ${-n} 天）`];
+  if(n<=7)return ['due-soon-text',`交期 ${x.due}（剩 ${n} 天）`];
+  return ['',`交期 ${x.due}`];
+}
+function renderCard(x){
+  const inv=x.invStatus||'未調查';
+  const n=daysTo(x.due);
+  const cls=isClosed(x)?' is-closed':(n!=null&&n<0?' is-overdue':(n!=null&&n<=7?' is-due-soon':''));
+  const [dcls,dtext]=dueLabel(x);
+  const lastLog=(x.logs||[])[0];
+  const preview=lastLog?`${lastLog.date}｜${lastLog.text}`:(x.detail||x.note||'');
+  const investigated=inv!=='未調查';
+  const basis=(x.basis||[]).join('＋');
+  const logs=(x.logs||[]).map((l,i)=>`<div class="log-entry"><div class="log-date-badge">${escHtml(l.date)}<div class="log-by">${escHtml(who(l.byName,l.by))}</div></div><div class="log-text-display">${escHtml(l.text)}</div>${canLog()&&(canIntegrate()||l.by===me.email)?`<button class="log-icon-btn del" title="刪除" onclick="deleteLog('${x.id}',${i})"><i class="ti ti-trash"></i></button>`:''}</div>`).join('');
+  return `<div class="customer-card${cls}" id="card-${x.id}">
+  <div class="card-header" onclick="toggleCard('${x.id}')">
+    <span class="light-dot" style="background:${LIGHT_COLOR[x.light]||'#ccc'}" title="燈號：${escHtml(x.light||'未填')}"></span>
+    <div class="card-meta">
+      <div class="card-name"><span class="card-no">#${escHtml(x.no)}</span>${escHtml(x.fabric)} · ${escHtml(x.color)}</div>
+      <div class="card-company">${escHtml([x.brand,x.orders].filter(v=>!blank(v)).join(' · ')||'品牌／缸號未填')}</div>
+      ${preview?`<div class="card-log-preview">${escHtml(preview)}</div>`:''}
+    </div>
+    <div class="card-right">
+      <div class="card-badges">${badge(x.type,TYPE_TONE[x.type])}${badge(inv,INV_TONE[inv])}${x.category?badge(x.category,CAT_TONE[x.category]):''}</div>
+      <div class="card-last ${dcls}">${escHtml(dtext)}</div>
+    </div>
+  </div>
+  <div class="card-body${openCards.has(x.id)?' open':''}">
+    <div class="section-label">① 盤點 <span class="who">${escHtml(who(x.createdByName,x.createdBy))}・${escHtml(x.reportDate||'')}</span></div>
+    <div class="info-grid">
+      ${infoItem('燈號',x.light)}${infoItem('提報來源',x.source)}
+      ${infoItem('影響訂單／缸號',x.orders)}${infoItem('影響數量',x.qty)}
+      ${infoItem('備註',x.note,true)}
+    </div>
+    <div class="section-label">② 技術課調查 ${investigated?`<span class="who">${escHtml(who(x.investigatorName,x.investigator))}・${escHtml(x.invDate||'')}</span>`:''}</div>
+    ${investigated?`<div class="info-grid">
+      ${infoItem('廠別',x.factory)}${infoItem('發生製程段',x.stage)}
+      ${infoItem('具體狀況',x.detail,true)}
+      ${infoItem('實測值／依據',x.measure)}${infoItem('資訊依據',basis)}
+      ${infoItem('目前處理狀況',x.handling,true)}
+      ${infoItem('改善／調整缸號',x.fixLots)}${infoItem('廠端負責人',x.factoryOwner)}
+      ${infoItem('廠端原因說法',x.factoryCause,true)}
+      ${infoItem('技術課初判',x.techView,true)}
+    </div>`:`<div class="pending-box">尚未調查。${canInvestigate()?'了解狀況後，請按下方「填寫調查」。':'等待技術課回報。'}</div>`}
+    <div class="section-label">③ 整合</div>
+    ${x.category||x.salesRep||x.sumNote?`<div class="info-grid">${infoItem('整合後分類',x.category)}${infoItem('業務窗口',x.salesRep)}${infoItem('整合備註',x.sumNote,true)}</div>`:'<div class="pending-box">尚未整合判定。</div>'}
+    <div class="section-label">追蹤紀錄</div>
+    ${logs||'<div class="pending-box">還沒有追蹤紀錄。</div>'}
+    ${canLog()?`<div class="add-log-row"><input class="log-input" id="log-${x.id}" placeholder="新增追蹤紀錄（今天）…" onkeydown="if(event.key==='Enter')addLog('${x.id}')"><button class="btn-log" onclick="addLog('${x.id}')">新增紀錄</button></div>`:''}
+    ${(()=>{const b=[];
+      if(canDelete(x))b.push(`<button class="btn-del-c" onclick="deleteIssue('${x.id}')">刪除</button>`);
+      if(canEditReport(x))b.push(`<button class="btn-edit-c" onclick="openReport('${x.id}')">編輯提報</button>`);
+      if(canIntegrate())b.push(`<button class="btn-edit-c" onclick="openSum('${x.id}')">整合判定</button>`);
+      if(canInvestigate())b.push(`<button class="btn-edit-c primary" onclick="openInv('${x.id}')">${investigated?'更新調查':'填寫調查'}</button>`);
+      return b.length?`<div class="card-footer">${b.join('')}</div>`:'';})()}
+  </div>
+</div>`;
+}
+function renderStatsRow(){
+  document.getElementById('stats-row').innerHTML=STAT_DEFS.map(([k,label,fn])=>`<div class="stat-card${F.stat===k?' active':''}" onclick="toggleStat('${k}')"><div class="stat-num">${items.filter(fn).length}</div><div class="stat-label">${label}</div></div>`).join('');
+}
+function toggleStat(k){F.stat=(F.stat===k?'':k);if(F.stat){F.lights.clear();F.inv.clear();F.cats.clear();paintChips();}render();}
+function render(){
+  refreshBrandOptions();
+  renderStatsRow();
+  const list=filtered();
+  const el=document.getElementById('issue-list');
+  if(!items.length)el.innerHTML=`<div class="empty"><i class="ti ti-clipboard-check" style="font-size:32px;display:block;margin-bottom:8px"></i>目前沒有提報的項目${canReport()?'，按右上角「提報異常」開始':''}</div>`;
+  else if(!list.length)el.innerHTML='<div class="empty">沒有符合篩選條件的項目</div>';
+  else el.innerHTML=list.map(renderCard).join('');
+  if(currentView==='stats')renderStats();
+}
+function toggleCard(id){if(openCards.has(id))openCards.delete(id);else openCards.add(id);const b=document.querySelector('#card-'+CSS.escape(id)+' .card-body');if(b)b.classList.toggle('open',openCards.has(id));}
+
+/* ── 提報 ── */
+function nextNo(){return items.reduce((m,x)=>Math.max(m,Number(x.no)||0),0)+1;}
+function openReport(id=null){
+  if(id?!canEditReport(byId(id)):!canReport()){showToast(id?'只能編輯自己提報的項目':'你的角色不能提報');return;}
+  editingId=id;const x=id?byId(id):null;
+  document.getElementById('report-title').textContent=x?`編輯提報 #${x.no}`:'提報異常';
+  document.getElementById('r-save-next').style.display=x?'none':'';
+  setVal('r-fabric',x?x.fabric:'');setVal('r-color',x?x.color:'');setVal('r-type',x?x.type:'');
+  setPick('r-light',x?x.light:'');
+  setVal('r-brand',x?x.brand:'');setVal('r-source',x?x.source:'');
+  setVal('r-orders',x?x.orders:'');setVal('r-qty',x?x.qty:'');setVal('r-due',x?x.due:'');setVal('r-note',x?x.note:'');
+  document.querySelectorAll('#report-modal-bg .field-error').forEach(e=>e.classList.remove('field-error'));
+  document.getElementById('report-modal-bg').style.display='flex';
+  if(!x)setTimeout(()=>document.getElementById('r-fabric').focus(),50);
+}
+function closeReport(){document.getElementById('report-modal-bg').style.display='none';editingId=null;}
+async function saveReport(andNext){
+  const d={fabric:val('r-fabric'),color:val('r-color'),type:val('r-type'),light:pick['r-light'],brand:val('r-brand'),source:val('r-source'),orders:val('r-orders'),qty:val('r-qty'),due:val('r-due'),note:val('r-note')};
+  let bad=false;
+  [['r-fabric',d.fabric],['r-color',d.color],['r-type',d.type]].forEach(([id,v])=>{const e=document.getElementById(id);e.classList.toggle('field-error',!v);if(!v)bad=true;});
+  if(bad||!d.light){showToast(!d.light&&!bad?'請選擇燈號':'請填寫布號、顏色與異常類型');return;}
+  const same=items.find(x=>x.id!==editingId&&!isClosed(x)&&x.type===d.type&&String(x.fabric).trim().toLowerCase()===d.fabric.toLowerCase()&&String(x.color).trim().toLowerCase()===d.color.toLowerCase());
+  if(same&&!confirm(`#${same.no} 已經有相同的布號、顏色與異常類型（由 ${who(same.createdByName,same.createdBy)} 提報）。\n仍要另外新增一筆嗎？`))return;
+  try{
+    if(editingId){await Store.update(COL,editingId,Object.assign(d,{updatedBy:me.email,updatedAt:nowStamp()}));showToast('✓ 已更新');closeReport();}
+    else{
+      const id=await Store.add(COL,Object.assign(d,{no:nextNo(),invStatus:'未調查',reportDate:TODAY,createdBy:me.email,createdByName:me.name,createdAt:nowStamp(),logs:[]}));
+      showToast('✓ 已提報');
+      if(andNext){const keep={brand:d.brand,source:d.source};openReport();setVal('r-brand',keep.brand);setVal('r-source',keep.source);}
+      else{closeReport();openCards.add(id);render();}
+    }
+  }catch(err){showToast('✗ 儲存失敗：'+err.message);}
+}
+async function deleteIssue(id){
+  const x=byId(id);if(!x)return;
+  if(!canDelete(x)){showToast('你的角色不能刪除這筆資料');return;}
+  if(!confirm(`確定刪除 #${x.no} ${x.fabric}・${x.color}？刪除後無法復原。\n如果只是問題已排除，請改用「整合判定」標為「已解決／誤報」。`))return;
+  try{await Store.remove(COL,id);showToast('✓ 已刪除');}catch(err){showToast('✗ 刪除失敗：'+err.message);}
+}
+
+/* ── 調查回報 ── */
+function openInv(id){
+  if(!canInvestigate()){showToast('只有技術課與主管可以填寫調查');return;}
+  const x=byId(id);if(!x)return;invId=id;
+  document.getElementById('inv-sub').textContent=`#${x.no}　${x.fabric}・${x.color}・${x.type}`+(x.orders?`　｜　${x.orders}`:'');
+  setPick('i-state',x.invStatus==='已回報'||x.invStatus==='已整合'?'調查完成':(x.invStatus==='調查中'?'調查中':''));
+  setVal('i-factory',x.factory);setVal('i-stage',x.stage);setVal('i-detail',x.detail);setVal('i-measure',x.measure);
+  setPick('i-basis',x.basis||[]);
+  setVal('i-handling',x.handling);setVal('i-fixlots',x.fixLots);setVal('i-owner',x.factoryOwner);setVal('i-cause',x.factoryCause);setVal('i-view',x.techView);
+  document.getElementById('inv-modal-bg').style.display='flex';
+}
+function closeInv(){document.getElementById('inv-modal-bg').style.display='none';invId=null;}
+async function saveInv(){
+  const x=byId(invId);if(!x)return;
+  const state=pick['i-state'];
+  if(!state){showToast('請選擇本次回報狀態');return;}
+  const d={factory:val('i-factory'),stage:val('i-stage'),detail:val('i-detail'),measure:val('i-measure'),basis:BASIS.filter(b=>pick['i-basis'].includes(b)),handling:val('i-handling'),fixLots:val('i-fixlots'),factoryOwner:val('i-owner'),factoryCause:val('i-cause'),techView:val('i-view'),
+    investigator:me.email,investigatorName:me.name,invDate:TODAY,updatedBy:me.email,updatedAt:nowStamp()};
+  // 已整合的項目更新調查內容時，維持「已整合」
+  d.invStatus=x.invStatus==='已整合'?'已整合':(state==='調查完成'?'已回報':'調查中');
+  openCards.add(invId);
+  try{await Store.update(COL,invId,d);showToast('✓ 已儲存調查回報');closeInv();}catch(err){showToast('✗ 儲存失敗：'+err.message);}
+}
+
+/* ── 整合判定 ── */
+function openSum(id){
+  if(!canIntegrate()){showToast('只有主管與管理員可以做整合判定');return;}
+  const x=byId(id);if(!x)return;sumId=id;
+  document.getElementById('sum-sub').textContent=`#${x.no}　${x.fabric}・${x.color}・${x.type}`;
+  setPick('s-cat',x.category||'');setPick('s-light',x.light||'');setVal('s-rep',x.salesRep);setVal('s-note',x.sumNote);
+  document.getElementById('sum-modal-bg').style.display='flex';
+}
+function closeSum(){document.getElementById('sum-modal-bg').style.display='none';sumId=null;}
+async function saveSum(){
+  const x=byId(sumId);if(!x)return;
+  const d={category:pick['s-cat'],light:pick['s-light']||x.light,salesRep:val('s-rep'),sumNote:val('s-note'),updatedBy:me.email,updatedAt:nowStamp()};
+  if(d.category)d.invStatus='已整合';
+  else if(x.invStatus==='已整合')d.invStatus='已回報';
+  try{await Store.update(COL,sumId,d);showToast('✓ 已儲存整合判定');closeSum();}catch(err){showToast('✗ 儲存失敗：'+err.message);}
+}
+
+/* ── 追蹤紀錄 ── */
+async function addLog(id){
+  const x=byId(id);const inp=document.getElementById('log-'+id);if(!x||!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  if(!canLog())return;
+  const logs=[{date:TODAY,text,by:me.email,byName:me.name}].concat(x.logs||[]);
+  try{await Store.update(COL,id,{logs,updatedBy:me.email,updatedAt:nowStamp()});showToast('✓ 已新增紀錄');}catch(err){showToast('✗ 儲存失敗：'+err.message);}
+}
+async function deleteLog(id,i){
+  const x=byId(id);if(!x||!confirm('確定刪除這筆追蹤紀錄？'))return;
+  const logs=(x.logs||[]).slice();logs.splice(i,1);
+  try{await Store.update(COL,id,{logs,updatedBy:me.email,updatedAt:nowStamp()});}catch(err){showToast('✗ 刪除失敗：'+err.message);}
+}
+
+/* ── 統計 ── */
+function cell(n,heat){const z=!n;const bg=heat&&n?`background:rgba(244,177,131,${Math.min(1,0.25+0.75*n/heat)});color:#3a1d00;`:'';return `<td class="${z?'zero':''}" style="${bg}">${n}</td>`;}
+function renderStats(){
+  const live=items.filter(x=>!isClosed(x));
+  const cnt=(arr,fn)=>arr.filter(fn).length;
+  const t1=TYPES.map(([t])=>{const a=items.filter(x=>x.type===t);return [t,cnt(a,x=>x.light==='紅'),cnt(a,x=>x.light==='黃'),cnt(a,x=>x.light==='綠'),a.length,cnt(a,x=>!isClosed(x))];});
+  const tot=[1,2,3,4,5].map(i=>t1.reduce((s,r)=>s+r[i],0));
+  const all=items.length;
+  const m=TYPES.map(([t])=>[t].concat(STAGES.map(s=>cnt(live,x=>x.type===t&&x.stage===s)),[cnt(live,x=>x.type===t&&blank(x.stage))]));
+  const heat=Math.max(1,...m.flatMap(r=>r.slice(1)));
+  document.getElementById('stats-view').innerHTML=`
+  <div class="panel"><h3>依異常類型</h3><div class="tbl-wrap"><table class="stat">
+    <tr><th>異常類型</th><th>紅</th><th>黃</th><th>綠</th><th>合計</th><th>未解決</th><th>佔比</th></tr>
+    ${t1.map(r=>`<tr><td>${escHtml(r[0])}</td>${r.slice(1).map(n=>cell(n)).join('')}<td class="${r[4]?'':'zero'}">${all?Math.round(r[4]/all*100):0}%</td></tr>`).join('')}
+    <tr class="total"><td>合計</td>${tot.map(n=>`<td>${n}</td>`).join('')}<td></td></tr>
+  </table></div></div>
+  <div class="panel"><h3>異常類型 × 製程段</h3><div class="hint">只計未解決的項目；顏色越深代表越集中，是優先改善的方向。</div><div class="tbl-wrap"><table class="stat">
+    <tr><th>異常類型</th>${STAGES.map(s=>`<th>${s}</th>`).join('')}<th>未填</th></tr>
+    ${m.map(r=>`<tr><td>${escHtml(r[0])}</td>${r.slice(1).map(n=>cell(n,heat)).join('')}</tr>`).join('')}
+  </table></div></div>
+  <div class="panel"><h3>調查進度</h3><div class="tbl-wrap"><table class="stat">
+    <tr><th>調查狀態</th><th>件數</th></tr>
+    ${INV.map(([s])=>`<tr><td>${s}</td>${cell(cnt(items,x=>(x.invStatus||'未調查')===s))}</tr>`).join('')}
+  </table></div></div>
+  <div class="panel"><h3>整合後分類</h3><div class="tbl-wrap"><table class="stat">
+    <tr><th>分類</th><th>件數</th></tr>
+    ${CATS.map(([s])=>`<tr><td>${s}</td>${cell(cnt(items,x=>x.category===s))}</tr>`).join('')}
+    <tr><td>尚未分類</td>${cell(cnt(items,x=>blank(x.category)))}</tr>
+  </table></div></div>`;
+}
+
+/* ── 判定基準 ── */
+const GUIDE=[
+  ['毛度','purple','毛度','主觀比對','後整理（刷毛／磨毛）；紗線毛羽也可能影響','對照客戶核可樣目視加手觸；同批頭／中／尾、左／中／右比對','資深業務（持核可樣）＋後整理工務','毛度不足可補刷／補磨；過毛難回復，評估讓步或降級','超出核可樣範圍，且無法在交期內重工'],
+  ['色差','blue','色差、左中右異色','數據判定','染色；左中右異色另查定型','分光儀量測 ΔE 對核可色樣；標準光源箱目視；檢查缸差、頭尾差、左中右差','染整工務出數據，業務依客戶容許範圍判定','修色回修；分缸分色出貨；申請客戶讓步','超出客戶容許值，且需要客戶讓步或影響交期'],
+  ['牢度','teal','儲存牢度、耐水牢度、其他牢度','數據判定（需等測試時間）','染色／皂洗／定型','實驗室依客戶指定方法測試，對照客戶級數標準','品管／實驗室出報告，技術課判斷可否回修，業務決定是否申請讓步','加強皂洗或固色回修後重測','未達客戶級數標準；測試加重工的時間會壓到交期'],
+  ['布面品質','orange','雞爪痕、經向折痕、其他布面品質','數據判定','織造／染整','四分制驗布點數加疵點類型','品檢出驗布報告，業務確認客戶可接受的疵點等級','剪除扣碼；降級；補織','驗布點數超標，或出現客戶不接受的疵點類型'],
+  ['後處理手感','magenta','後處理手感','主觀比對','定型／柔軟加工','對照核可手感樣雙人手觸比對；輔以克重、厚度等數據','資深業務（最了解客戶手感期待）＋染整工務','重新過軟或水洗回修','與核可手感樣明顯不符，且需要客戶確認'],
+  ['機能性','green','Wicking、QD','數據判定（需等測試時間）','染整（吸排加工）／定型','實驗室依客戶指定方法測試吸濕與乾燥速率，含水洗後的結果，對照客戶標準','品管／實驗室出報告，技術課判斷可否重新加工，業務確認客戶標準','重新上吸排加工後重測；申請客戶讓步','未達客戶標準；測試加重工的時間會壓到交期'],
+  ['規格NG','yellow','規格NG','數據判定','織造／定型','量測克重、幅寬、密度、縮率等，對照客戶規格與允差','品管／實驗室出數據，技術課判斷可否調整，業務確認客戶允差','重新定型調整；申請客戶讓步','超出客戶允差，且無法在交期內調整']
+];
+function renderGuide(){
+  document.getElementById('guide-view').innerHTML=`
+  <div class="panel"><h3>燈號定義與升級規則</h3>
+    ${[['紅','red','影響交期，或需要客戶讓步','業務當天到場，與工務共同判定','當天上報課長；需客戶讓步或超過 48 小時無對策，上報部長'],['黃','yellow','可在內部標準內處理，不影響交期','固定駐廠窗口處理並追蹤','超過預計完成日仍未完成，上報課長'],['綠','green','輕微，已當場處理','只記錄，不派人','不升級，每週檢討時看趨勢']].map(r=>`<div class="guide-card"><h4>${badge(r[0]+'燈',r[1])} ${escHtml(r[2])}</h4><dl><dt>現場動作</dt><dd>${escHtml(r[3])}</dd><dt>升級規則</dt><dd>${escHtml(r[4])}</dd></dl></div>`).join('')}
+  </div>
+  <div class="panel"><h3>異常判定基準</h3><div class="hint">各項容許值以各品牌標準為準，這裡不列數值；請在「實測值／依據」註明當次採用的標準。</div>
+    ${GUIDE.map(g=>`<div class="guide-card"><h4>${badge(g[0],g[1])} ${escHtml(g[3])}</h4><div class="covers">涵蓋：${escHtml(g[2])}</div><dl><dt>主要製程段</dt><dd>${escHtml(g[4])}</dd><dt>判定方式</dt><dd>${escHtml(g[5])}</dd><dt>現場判定者</dt><dd>${escHtml(g[6])}</dd><dt>常見處置</dt><dd>${escHtml(g[7])}</dd><dt>紅燈條件</dt><dd>${escHtml(g[8])}</dd></dl></div>`).join('')}
+  </div>
+  <div class="panel"><h3>填寫分工</h3>
+    <div class="guide-card"><dl><dt>① 盤點</dt><dd>生管／業務提報：布號、顏色、異常類型、燈號、影響訂單與交期。</dd><dt>② 調查</dt><dd>技術課到現場了解具體狀況與目前處理狀況，分清楚「廠端說法」與「技術課初判」。</dd><dt>③ 整合</dt><dd>部長或課長決定去向：進入細節追蹤、已有對策僅監看、已解決／誤報、待補資料。</dd></dl></div>
+  </div>`;
+}
+
+/* ── 分頁 ── */
+function switchView(v){
+  currentView=v;
+  ['list','stats','guide','users'].forEach(k=>{document.getElementById(k+'-view').style.display=k===v?'':'none';document.getElementById('tab-'+k).classList.toggle('active',k===v);});
+  document.getElementById('list-actions').style.display=v==='list'?'':'none';
+  if(v==='stats')renderStats();
+  if(v==='guide')renderGuide();
+  if(v==='users')renderUsers();
+}
+
+/* ── 使用者與角色（只有管理員看得到） ── */
+function roleOptions(cur){return Object.entries(ROLES).map(([k,r])=>`<option value="${k}"${k===cur?' selected':''}>${r[0]}</option>`).join('');}
+function renderUsers(){
+  const el=document.getElementById('users-view');
+  if(!isAdmin()){el.innerHTML='<div class="empty">只有管理員可以管理使用者</div>';return;}
+  const list=users.slice().sort((a,b)=>Object.keys(ROLES).indexOf(a.role)-Object.keys(ROLES).indexOf(b.role)||String(a.name||'').localeCompare(String(b.name||''),'zh-Hant'));
+  el.innerHTML=`
+  <div class="panel"><h3>新增使用者</h3><div class="hint">對方用這個 Google 信箱登入後，就會依角色看到對應的功能。</div>
+    <div class="user-form">
+      <div class="field"><label>Google 信箱<span class="req">*</span></label><input id="u-email" type="email" autocomplete="off" placeholder="name@gmail.com"></div>
+      <div class="field"><label>姓名<span class="req">*</span></label><input id="u-name" autocomplete="off"></div>
+      <div class="field"><label>單位</label><input id="u-dept" autocomplete="off" placeholder="例如：生管課、開發一課、技術課"></div>
+      <div class="field"><label>角色<span class="req">*</span></label><select id="u-role">${roleOptions('reporter')}</select></div>
+    </div>
+    <button class="btn-add" onclick="saveUser()"><i class="ti ti-user-plus"></i> 新增使用者</button>
+  </div>
+  <div class="panel"><h3>使用者名單（${list.length} 人）</h3>
+    <div class="hint">擁有者 ${escHtml(OWNER_EMAILS.join('、'))} 固定是管理員，不在名單內也能登入。</div>
+    ${list.length?list.map(u=>`<div class="user-row">
+      <div class="user-main"><div class="user-name">${escHtml(u.name||'')}${u.dept?` <span class="user-dept">${escHtml(u.dept)}</span>`:''}</div><div class="user-email">${escHtml(u.id)}</div></div>
+      <select class="mini-select" onchange="changeRole('${escHtml(u.id)}',this.value)">${roleOptions(u.role)}</select>
+      <button class="btn-del-c" style="margin:0" onclick="removeUser('${escHtml(u.id)}')">移除</button>
+    </div>`).join(''):'<div class="pending-box">還沒有新增任何使用者。</div>'}
+  </div>
+  <div class="panel"><h3>角色權限</h3><div class="tbl-wrap"><table class="stat">
+    <tr><th>角色</th><th>提報</th><th>調查回報</th><th>整合判定</th><th>追蹤紀錄</th><th>刪除</th><th>使用者管理</th></tr>
+    ${[['admin','✓','✓','✓','✓','✓','✓'],['lead','✓','✓','✓','✓','✓','—'],['tech','✓','✓','—','✓','自己且未調查','—'],['reporter','✓','—','—','✓','自己且未調查','—'],['viewer','—','—','—','—','—','—']].map(r=>`<tr><td>${badge(ROLES[r[0]][0],ROLES[r[0]][1])}</td>${r.slice(1).map(c=>`<td class="${c==='—'?'zero':''}">${c}</td>`).join('')}</tr>`).join('')}
+  </table></div><div class="hint" style="margin:10px 0 0">技術課與提報角色只能編輯自己提報的項目；所有角色都能檢視清單、統計並匯出 Excel。</div></div>`;
+}
+async function saveUser(){
+  if(!isAdmin())return;
+  const email=val('u-email').toLowerCase(),name=val('u-name'),dept=val('u-dept'),r=document.getElementById('u-role').value;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!name){showToast('請填寫正確的信箱與姓名');return;}
+  if(users.some(u=>u.id===email)&&!confirm(email+' 已經在名單內，要覆蓋原本的設定嗎？'))return;
+  try{await Store.set(USERS_COL,email,{name,dept,role:r,addedBy:me.email,addedAt:nowStamp()});showToast('✓ 已新增 '+name);}catch(err){showToast('✗ 新增失敗：'+err.message);}
+}
+async function changeRole(email,r){
+  if(!isAdmin()||!ROLES[r])return;
+  try{await Store.update(USERS_COL,email,{role:r});showToast('✓ 已更新角色');}catch(err){showToast('✗ 更新失敗：'+err.message);}
+}
+async function removeUser(email){
+  if(!isAdmin())return;
+  const u=users.find(x=>x.id===email);
+  if(!confirm(`確定移除 ${u?u.name:email}？移除後對方將無法登入，已填寫的資料會保留。`))return;
+  try{await Store.remove(USERS_COL,email);showToast('✓ 已移除');}catch(err){showToast('✗ 移除失敗：'+err.message);}
+}
+
+/* ── 匯出 Excel（欄位順序與 Excel 版「問題布號盤點」相同） ── */
+const XLSX_SRC='https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+function loadXLSX(){
+  if(window.XLSX)return Promise.resolve(window.XLSX);
+  return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=XLSX_SRC;sc.onload=()=>window.XLSX?res(window.XLSX):rej(new Error('XLSX 未載入'));sc.onerror=()=>rej(new Error('無法載入 Excel 元件'));document.head.appendChild(sc);});
+}
+const EXPORT_COLS=[['項次',x=>x.no],['布號',x=>x.fabric],['顏色／色號',x=>x.color],['異常類型',x=>x.type],['燈號',x=>x.light],['調查狀態',x=>x.invStatus||'未調查'],['品牌／客戶',x=>x.brand],['提報來源',x=>x.source],['提報日期',x=>x.reportDate],['影響訂單／缸號',x=>x.orders],['影響數量（含單位）',x=>x.qty],['最近客戶交期',x=>x.due],
+  ['廠別',x=>x.factory],['發生製程段',x=>x.stage],['具體狀況',x=>x.detail],['實測值／依據',x=>x.measure],['資訊依據',x=>(x.basis||[]).join('＋')],['目前處理狀況',x=>x.handling],['改善／調整缸號',x=>x.fixLots],['廠端負責人',x=>x.factoryOwner],['廠端原因說法',x=>x.factoryCause],['技術課初判',x=>x.techView],['調查工務',x=>who(x.investigatorName,x.investigator)],['調查完成日',x=>x.invDate],
+  ['業務窗口',x=>x.salesRep],['整合後分類',x=>x.category],['備註',x=>[x.note,x.sumNote].filter(v=>!blank(v)).join('\n')],['提報人',x=>who(x.createdByName,x.createdBy)],['追蹤紀錄',x=>(x.logs||[]).map(l=>`${l.date}｜${String(l.text||'').replace(/\s*\n\s*/g,' ／ ')}`).join('\n')]];
+function exportExcel(){
+  const list=filtered();
+  if(!list.length){showToast('目前篩選結果沒有資料');return;}
+  showToast('正在產生 Excel…');
+  loadXLSX().then(XLSX=>{
+    const headers=EXPORT_COLS.map(c=>c[0]);
+    const rows=list.slice().sort((a,b)=>(a.no||0)-(b.no||0)).map(x=>EXPORT_COLS.map(c=>{const v=c[1](x);return v==null?'':v;}));
+    const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);
+    ws['!cols']=headers.map((h,i)=>{const w=Math.max(String(h).length*2,...rows.slice(0,200).map(r=>Math.min(50,String(r[i]).split('\n').reduce((m,l)=>Math.max(m,[...l].reduce((t,ch)=>t+(ch.charCodeAt(0)>255?2:1),0)),0))));return {wch:Math.max(8,Math.min(50,w+2))};});
+    const range=XLSX.utils.decode_range(ws['!ref']);
+    for(let r=range.s.r;r<=range.e.r;r++)for(let c=range.s.c;c<=range.e.c;c++){const ref=XLSX.utils.encode_cell({r,c});if(!ws[ref])continue;ws[ref].s={alignment:{wrapText:true,vertical:'top'},font:r===0?{bold:true}:{},fill:r===0?{fgColor:{rgb:c<12?'EDEDED':(c<24?'DDEBF7':'E2EFDA')}}:undefined};}
+    ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:headers.length-1}})};
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'問題布號盤點');
+    XLSX.writeFile(wb,`大貨異常盤點_${TODAY}_${rows.length}筆.xlsx`);
+    showToast(`✓ 已匯出 ${rows.length} 筆`);
+  }).catch(err=>showToast('✗ 匯出失敗：'+err.message));
+}
+
+/* ════════ 登入與啟動 ════════ */
+function showScreen(which){
+  document.getElementById('login-screen').style.display=which==='login'?'flex':'none';
+  document.getElementById('unauthorized-screen').style.display=which==='unauthorized'?'flex':'none';
+  document.getElementById('app-page').style.display=which==='app'?'block':'none';
+}
+function signInWithGoogle(){firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err=>{if(err.code!=='auth/popup-closed-by-user')showToast('✗ 登入失敗：'+err.message);});}
+function signOutUser(){if(DEMO){location.href=location.pathname;return;}firebase.auth().signOut();}
+function attachListener(){
+  detachListener();
+  document.getElementById('issue-list').innerHTML='<div class="empty">載入中…</div>';
+  unsub=Store.listen(COL,d=>{items=d.map(x=>Object.assign({logs:[]},x));render();});
+}
+function detachListener(){if(unsub){try{unsub();}catch(e){}unsub=null;}if(unsubUsers){try{unsubUsers();}catch(e){}unsubUsers=null;}items=[];users=[];}
+function applyRole(){
+  document.getElementById('user-email-display').innerHTML=escHtml(me.name)+' '+badge(ROLES[me.role][0],ROLES[me.role][1]);
+  document.getElementById('btn-report').style.display=canReport()?'':'none';
+  document.getElementById('tab-users').style.display=isAdmin()?'':'none';
+  if(!isAdmin()&&currentView==='users')switchView('list');
+}
+function enterApp(user){
+  me=user;applyRole();
+  showScreen('app');attachListener();
+  if(isAdmin())unsubUsers=Store.listen(USERS_COL,d=>{users=d;if(currentView==='users')renderUsers();});
+  // 網址加上 #report 會直接打開提報表單，方便貼到群組或做成 QR code
+  if(location.hash==='#report'&&canReport())openReport();
+}
+// 登入後到 users 集合查自己的角色；擁有者不在名單內也是管理員
+async function resolveUser(user){
+  const email=String(user.email||'').toLowerCase();
+  let doc=null;
+  try{const s=await firebase.firestore().collection(USERS_COL).doc(email).get();doc=s.exists?s.data():null;}catch(e){doc=null;}
+  if(OWNER_EMAILS.map(e=>e.toLowerCase()).includes(email))return {email,name:(doc&&doc.name)||user.displayName||email,role:'admin'};
+  if(doc&&ROLES[doc.role])return {email,name:doc.name||user.displayName||email,role:doc.role};
+  return null;
+}
+// 示範模式：切換角色，預覽每種角色看到的畫面
+function demoRole(r){me=Object.assign({},me,{role:r,name:'示範・'+ROLES[r][0],email:r==='reporter'?'reporter@demo':'demo@local'});applyRole();render();if(currentView==='users')renderUsers();}
+function initForms(){
+  document.getElementById('r-type').innerHTML='<option value="">請選擇</option>'+TYPES.map(t=>`<option>${escHtml(t[0])}</option>`).join('');
+  document.getElementById('r-source').innerHTML='<option value="">請選擇</option>'+SOURCES.map(s=>`<option>${escHtml(s)}</option>`).join('');
+  document.getElementById('i-stage').innerHTML='<option value="">請選擇</option>'+STAGES.map(s=>`<option>${escHtml(s)}</option>`).join('');
+  buildPick('r-light',LIGHTS,{cls:'light'});
+  buildPick('s-light',LIGHTS.map(l=>l[0]),{cls:'light'});
+  buildPick('i-state',[['調查中','之後會再補充'],['調查完成','']]);
+  buildPick('i-basis',BASIS,{multi:true});
+  buildPick('s-cat',CATS.map(c=>c[0]));
+  buildFilters();
+  [['report-modal-bg',closeReport],['inv-modal-bg',closeInv],['sum-modal-bg',closeSum]].forEach(([id,fn])=>setupBackdropClose(id,fn));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeReport();closeInv();closeSum();}});
+}
+function seedDemo(){
+  const base={createdBy:'reporter@demo',createdByName:'示範・提報',createdAt:nowStamp(),reportDate:TODAY,logs:[]};
+  Store.mem[USERS_COL]={'lead@example.com':{name:'（範例）課長',dept:'技術課',role:'lead'},'tech@example.com':{name:'（範例）染整工務',dept:'技術課',role:'tech'},'pc@example.com':{name:'（範例）生管專員',dept:'生管課',role:'reporter'},'sales@example.com':{name:'（範例）業務',dept:'開發一課',role:'reporter'},'factory@example.com':{name:'（範例）廠端主管',dept:'廠端',role:'viewer'}};
+  const plus=n=>{const d=new Date(TODAY+'T00:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  Store.mem[COL]={
+    demo1:Object.assign({},base,{no:1,fabric:'（範例）布號001',color:'深藍 NV-01',type:'色差',light:'紅',brand:'（範例）品牌A',source:'生管',orders:'PO-0001／缸號 D1123、D1125',qty:'約 3,200 碼',due:plus(5),note:'',invStatus:'已回報',factory:'一廠',stage:'染色',detail:'兩缸與核可色樣比對偏黃，缸差明顯',measure:'ΔE 1.6（範例標準 ≤1.0）',basis:['親見實物','查閱紀錄'],handling:'廠端已安排修色，尚未排定重測牢度',fixLots:'D1131（調整升溫曲線後重染）',factoryOwner:'（範例）染整主管',factoryCause:'染料批次更換',techView:'升溫曲線與開發條件不同，待比對紀錄確認',investigator:'demo@local',investigatorName:'示範・技術課',invDate:TODAY,logs:[{date:TODAY,text:'D1131 重染完成，待測牢度',by:'demo@local',byName:'示範・技術課'}]}),
+    demo2:Object.assign({},base,{no:2,fabric:'（範例）布號002',color:'黑 BK-02',type:'後處理手感',light:'黃',brand:'（範例）品牌B',source:'業務／客訴',orders:'PO-0002／缸號待查',qty:'約 1,500 碼',due:plus(19),note:'客戶反應手感偏硬',invStatus:'未調查'}),
+    demo3:Object.assign({},base,{no:3,fabric:'（範例）布號003',color:'白 WH-01',type:'Wicking',light:'黃',brand:'（範例）品牌A',source:'實驗室',orders:'PO-0003／缸號 D1140',qty:'約 800 碼',due:plus(12),note:'',invStatus:'調查中',factory:'二廠',stage:'定型',detail:'水洗後吸濕未達標',measure:'',basis:['口頭說明'],handling:'',fixLots:'',factoryOwner:'',factoryCause:'',techView:'',investigator:'demo@local',investigatorName:'示範・技術課',invDate:TODAY})
+  };
+}
+
+initForms();
+if(DEMO){
+  Store.init('memory');seedDemo();document.getElementById('demo-banner').style.display='flex';
+  enterApp({email:'demo@local',name:'示範・管理員',role:'admin'});
+} else if(firebaseConfig.apiKey==='YOUR_API_KEY'){
+  document.body.innerHTML='<div class="empty" style="padding:4rem 1rem;line-height:1.9"><i class="ti ti-alert-triangle" style="font-size:32px;display:block;margin-bottom:8px"></i>尚未設定 Firebase，請依照說明填入新專案的 firebaseConfig。<br>想先看畫面，可以在網址後面加上 <a href="?demo">?demo</a> 進入示範模式。</div>';
+} else {
+  firebase.initializeApp(firebaseConfig);Store.init('firebase');
+  firebase.auth().onAuthStateChanged(async user=>{
+    if(!user){me=null;detachListener();showScreen('login');return;}
+    const u=await resolveUser(user);
+    if(!u){me=null;detachListener();document.getElementById('unauthorized-email').textContent=user.email;showScreen('unauthorized');}
+    else enterApp(u);
+  });
+}
+</script>
+</body>
+</html>
